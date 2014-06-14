@@ -12,6 +12,7 @@ class InteractiveShell
 
 	public function read()
 	{
+		fputs($this->stdin, '>>> ');
 		$msg = fgets($this->stdin, 1024);
 		$continue = $this->handle($msg);
 		if ($continue) $this->read();
@@ -19,18 +20,34 @@ class InteractiveShell
 
 	public function handle($msg)
 	{
-		switch ($msg) {
-			case "quit\n":
-				return false;
-				break;
+		if (preg_match('/^=/', $msg)) $msg = preg_replace('/^=/', 'return', $msg);
+		if ( ! preg_match('/;$/', $msg)) $msg .= ';';
 
-			default:
-				echo "Sorry, your input isn't recognized...\n";
+		try {
+			$_out = eval($msg);
 
-				return true;
-				break;
+			echo $_out."\n";
+		} catch (Exception $e) {
+			echo "ERROR";
 		}
 	}
 }
 
-?>
+$anim = ['|', '/', '-', '\\'];
+$frame = 0;
+$ellip = ['   ', '.  ', '.. ', '...'];
+
+/** /
+while (++$frame) {
+	if ($frame > 3) $frame = 0;
+	// echo "  uploading {$ellip[$frame]} {$anim[$frame]}\r";
+	echo "{$anim[$frame]}\r";
+	usleep(62500);
+}
+/**/
+
+$I = new InteractiveShell;
+
+while (1) {
+	$I->read();
+}
